@@ -11,6 +11,11 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+// Disable forgot password route
+Route::get('forgot-password', function() {
+    return redirect()->route('login')->with('status', 'Silakan hubungi admin untuk reset password.');
+});
+
 // Protected routes
 Route::middleware(['auth'])->group(function () {
     // Dashboard
