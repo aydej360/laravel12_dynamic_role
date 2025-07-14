@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Log;
+use App\Services\EncryptionService;
 
 class UserController extends Controller
 {
@@ -65,34 +66,54 @@ class UserController extends Controller
         Log::info('User created: ' . $user->name . ' by: ' . auth()->user()->name);
         
         return redirect()->route('users.index')
-            ->with('success', 'User created successfully.');
+            ->with('success', 'User "' . $user->name . '" has been created successfully!');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show($encryptedId)
     {
-        $user->load('roles');
-        Log::info('User profile viewed: ' . $user->name . ' by: ' . auth()->user()->name);
-        return view('users.show', compact('user'));
+        try {
+            $id = EncryptionService::decryptId($encryptedId);
+            $user = User::findOrFail($id);
+            $user->load('roles');
+            Log::info('User profile viewed: ' . $user->name . ' by: ' . auth()->user()->name);
+            return view('users.show', compact('user'));
+        } catch (\Exception $e) {
+            Log::error('Error viewing user: ' . $e->getMessage());
+            return redirect()->route('users.index')
+                ->with('error', 'Unable to view user. Invalid or expired link.');
+        }
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user)
+    public function edit($encryptedId)
     {
-        $roles = Role::all();
-        $user->load('roles');
-        return view('users.edit', compact('user', 'roles'));
+        try {
+            $id = EncryptionService::decryptId($encryptedId);
+            $user = User::findOrFail($id);
+            $roles = Role::all();
+            $user->load('roles');
+            return view('users.edit', compact('user', 'roles'));
+        } catch (\Exception $e) {
+            Log::error('Error editing user: ' . $e->getMessage());
+            return redirect()->route('users.index')
+                ->with('error', 'Unable to edit user. Invalid or expired link.');
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, $encryptedId)
     {
+        try {
+            $id = EncryptionService::decryptId($encryptedId);
+            $user = User::findOrFail($id);
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
@@ -113,21 +134,35 @@ class UserController extends Controller
 
         Log::info('User updated: ' . $user->name . ' by: ' . auth()->user()->name);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User updated successfully.');
+            return redirect()->route('users.index')
+                ->with('success', 'User "' . $user->name . '" has been updated successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error updating user: ' . $e->getMessage());
+            return redirect()->route('users.index')
+                ->with('error', 'Unable to update user. Please try again.');
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy($encryptedId)
     {
-        $userName = $user->name;
-        $user->delete();
+        try {
+            $id = EncryptionService::decryptId($encryptedId);
+            $user = User::findOrFail($id);
+            
+            $userName = $user->name;
+            $user->delete();
 
-        Log::info('User deleted: ' . $userName . ' by: ' . auth()->user()->name);
+            Log::info('User deleted: ' . $userName . ' by: ' . auth()->user()->name);
 
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully.');
+            return redirect()->route('users.index')
+                ->with('success', 'User "' . $userName . '" has been deleted successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error deleting user: ' . $e->getMessage());
+            return redirect()->route('users.index')
+                ->with('error', 'Unable to delete user. Please try again.');
+        }
     }
 }

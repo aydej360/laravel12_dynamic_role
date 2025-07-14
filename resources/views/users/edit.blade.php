@@ -14,7 +14,7 @@
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('users.index') }}">Users</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('users.show', $user) }}">{{ $user->name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('users.show', \App\Services\EncryptionService::encryptId($user->id)) }}">{{ $user->name }}</a></li>
                     <li class="breadcrumb-item" aria-current="page">Edit</li>
                 </ul>
             </div>
@@ -32,7 +32,7 @@
                 <p class="text-muted mb-0">Update the user's information and permissions.</p>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('users.update', $user) }}">
+                <form method="POST" action="{{ route('users.update', \App\Services\EncryptionService::encryptId($user->id)) }}">
                     @csrf
                     @method('PUT')
 
@@ -94,7 +94,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('users.show', $user) }}" class="btn btn-secondary">
+                        <a href="{{ route('users.show', \App\Services\EncryptionService::encryptId($user->id)) }}" class="btn btn-secondary">
                             <i class="ti ti-x me-1"></i>Cancel
                         </a>
                         <button type="submit" class="btn btn-primary">
@@ -194,7 +194,7 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('users.show', $user) }}" class="btn btn-outline-primary">
+                    <a href="{{ route('users.show', \App\Services\EncryptionService::encryptId($user->id)) }}" class="btn btn-outline-primary">
                         <i class="ti ti-eye me-2"></i>View User
                     </a>
                     <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">

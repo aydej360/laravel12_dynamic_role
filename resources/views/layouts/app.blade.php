@@ -18,8 +18,9 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" id="main-style-link">
     <link rel="stylesheet" href="{{ asset('assets/css/style-preset.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
 </head>
-<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="{{ session('theme', 'light') }}">
     <!-- [ Pre-loader ] start -->
     <div class="loader-bg">
         <div class="loader-track">
@@ -132,6 +133,11 @@
                         </div>
                     </li>
                     <li class="pc-h-item">
+                        <a href="#" class="pc-head-link" onclick="toggleTheme()" title="Toggle Theme">
+                            <i class="ti ti-moon" id="theme-icon"></i>
+                        </a>
+                    </li>
+                    <li class="pc-h-item">
                         <a href="#" class="pc-head-link position-relative" id="user-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="{{ asset('assets/images/user/avatar-2.jpg') }}" alt="user" class="user-avtar" width="40">
                         </a>
@@ -140,14 +146,14 @@
                                 <i class="ti ti-user"></i>
                                 <span>Profile</span>
                             </a>
-                            <a href="#" class="dropdown-item">
+                            <a href="{{ route('settings.index') }}" class="dropdown-item">
                                 <i class="ti ti-settings"></i>
                                 <span>Settings</span>
                             </a>
                             <hr class="dropdown-divider">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="dropdown-item">
+                                <button type="submit" class="dropdown-item logout-btn">
                                     <i class="ti ti-logout"></i>
                                     <span>Logout</span>
                                 </button>
@@ -208,10 +214,192 @@
     <script src="{{ asset('assets/js/fonts/custom-font.js') }}"></script>
     <script src="{{ asset('assets/js/pcoded.js') }}"></script>
     <script src="{{ asset('assets/js/plugins/feather.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
     <script>layout_change('light');</script>
     <script>change_box_container('false');</script>
     <script>layout_rtl_change('false');</script>
     <script>preset_change("preset-1");</script>
     <script>font_change("Public-Sans");</script>
+    
+    <script>
+        // SweetAlert2 for delete confirmations and notifications
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle delete buttons
+            document.querySelectorAll('.delete-btn').forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const form = this.closest('form');
+                    const name = this.getAttribute('data-name');
+                    
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: `You are about to delete "${name}". This action cannot be undone!`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+            
+            // Handle logout confirmation
+            document.querySelectorAll('.logout-btn').forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const form = this.closest('form');
+                    
+                    Swal.fire({
+                        title: 'Logout Confirmation',
+                        text: 'Are you sure you want to logout?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0d6efd',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, logout',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+            
+            // Handle flash messages
+            @if(session('success'))
+                Swal.fire({
+                    title: 'Success!',
+                    text: '{{ session('success') }}',
+                    icon: 'success',
+                    confirmButtonColor: '#28a745',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            @endif
+            
+            @if(session('error'))
+                Swal.fire({
+                    title: 'Error!',
+                    text: '{{ session('error') }}',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545',
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+            @endif
+            
+            @if(session('warning'))
+                Swal.fire({
+                    title: 'Warning!',
+                    text: '{{ session('warning') }}',
+                    icon: 'warning',
+                    confirmButtonColor: '#ffc107',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            @endif
+            
+            @if(session('info'))
+                Swal.fire({
+                    title: 'Information',
+                    text: '{{ session('info') }}',
+                    icon: 'info',
+                    confirmButtonColor: '#17a2b8',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            @endif
+            
+            @if($errors->any())
+                Swal.fire({
+                    title: 'Validation Error!',
+                    html: '<ul class="text-left">' + 
+                        @foreach($errors->all() as $error)
+                            '<li>{{ $error }}</li>' +
+                        @endforeach
+                        '</ul>',
+                    icon: 'error',
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'OK'
+                });
+            @endif
+            
+            // Initialize theme icon
+            updateThemeIcon();
+        });
+        
+        // Theme toggle function
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-pc-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.body.setAttribute('data-pc-theme', newTheme);
+            updateThemeIcon();
+            
+            // Send AJAX request to update session
+            fetch('/settings/theme-toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    theme: newTheme
+                })
+            }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success notification
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                    
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Theme switched to ' + newTheme + ' mode!'
+                    });
+                }
+            });
+        }
+        
+        function updateThemeIcon() {
+            const theme = document.body.getAttribute('data-pc-theme');
+            const icon = document.getElementById('theme-icon');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+            }
+        }
+        
+        // Apply sidebar settings
+        function applySidebarSettings() {
+            const sidebarCollapsed = {{ session('sidebar_collapsed', 'false') ? 'true' : 'false' }};
+            if (sidebarCollapsed && document.body.classList) {
+                document.body.classList.add('pc-sidebar-collapsed');
+            }
+        }
+        
+        // Apply settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            applySidebarSettings();
+        });
+    </script>
 </body>
 </html>

@@ -34,17 +34,17 @@
                     <div class="col-auto">
                         <div class="btn-group" role="group">
                             @can('edit users')
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-warning">
+                            <a href="{{ route('users.edit', \App\Services\EncryptionService::encryptId($user->id)) }}" class="btn btn-warning">
                                 <i class="ti ti-edit me-1"></i>Edit
                             </a>
                             @endcan
                             
                             @can('delete users')
                             @if($user->id !== auth()->id())
-                            <form method="POST" action="{{ route('users.destroy', $user) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?')">
+                            <form method="POST" action="{{ route('users.destroy', \App\Services\EncryptionService::encryptId($user->id)) }}" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger">
+                                <button type="submit" class="btn btn-danger delete-btn" data-name="{{ $user->name }}">
                                     <i class="ti ti-trash me-1"></i>Delete
                                 </button>
                             </form>
@@ -216,17 +216,17 @@
             <div class="card-body">
                 <div class="d-grid gap-2">
                     @can('edit users')
-                    <a href="{{ route('users.edit', $user) }}" class="btn btn-outline-warning">
+                    <a href="{{ route('users.edit', \App\Services\EncryptionService::encryptId($user->id)) }}" class="btn btn-outline-warning">
                         <i class="ti ti-edit me-2"></i>Edit User
                     </a>
                     @endcan
                     
                     @if($user->id !== auth()->id())
                     @can('delete users')
-                    <form method="POST" action="{{ route('users.destroy', $user) }}" onsubmit="return confirm('Are you sure you want to delete this user?')">
+                    <form method="POST" action="{{ route('users.destroy', \App\Services\EncryptionService::encryptId($user->id)) }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger w-100">
+                        <button type="submit" class="btn btn-outline-danger w-100 delete-btn" data-name="{{ $user->name }}">
                             <i class="ti ti-trash me-2"></i>Delete User
                         </button>
                     </form>

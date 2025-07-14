@@ -80,7 +80,7 @@
                                             </div>
                                             <div class="flex-grow-1 ms-3">
                                                 <h6 class="mb-0">{{ $user->name }}</h6>
-                                                <small class="text-muted">ID: {{ $user->id }}</small>
+                                                <small class="text-muted">Registered User</small>
                                             </div>
                                         </div>
                                     </td>
@@ -119,23 +119,23 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                             @can('view users')
-                                            <a href="{{ route('users.show', $user) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                            <a href="{{ route('users.show', \App\Services\EncryptionService::encryptId($user->id)) }}" class="btn btn-sm btn-outline-primary" title="View">
                                                 <i class="ti ti-eye"></i>
                                             </a>
                                             @endcan
                                             
                                             @can('edit users')
-                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <a href="{{ route('users.edit', \App\Services\EncryptionService::encryptId($user->id)) }}" class="btn btn-sm btn-outline-warning" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </a>
                                             @endcan
                                             
                                             @can('delete users')
                                             @if($user->id !== auth()->id())
-                                            <form method="POST" action="{{ route('users.destroy', $user) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?')">
+                                            <form method="POST" action="{{ route('users.destroy', \App\Services\EncryptionService::encryptId($user->id)) }}" class="d-inline delete-form">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger delete-btn" title="Delete" data-name="{{ $user->name }}">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>

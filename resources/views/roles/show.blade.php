@@ -34,17 +34,17 @@
                     <div class="col-auto">
                         <div class="btn-group" role="group">
                             @can('edit roles')
-                            <a href="{{ route('roles.edit', $role) }}" class="btn btn-warning">
+                            <a href="{{ route('roles.edit', \App\Services\EncryptionService::encryptId($role->id)) }}" class="btn btn-warning">
                                 <i class="ti ti-edit me-1"></i>Edit
                             </a>
                             @endcan
                             
                             @can('delete roles')
                             @if($role->users_count == 0)
-                            <form method="POST" action="{{ route('roles.destroy', $role) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this role?')">
+                            <form method="POST" action="{{ route('roles.destroy', \App\Services\EncryptionService::encryptId($role->id)) }}" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger">
+                                <button type="submit" class="btn btn-danger delete-btn" data-name="{{ $role->name }}">
                                     <i class="ti ti-trash me-1"></i>Delete
                                 </button>
                             </form>
@@ -68,8 +68,8 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label text-muted">Role ID</label>
-                            <p class="form-control-plaintext">{{ $role->id }}</p>
+                            <label class="form-label text-muted">Role Type</label>
+                            <p class="form-control-plaintext">System Role</p>
                         </div>
                     </div>
                 </div>
@@ -144,7 +144,7 @@
                         <h6 class="text-muted mt-2">No permissions assigned</h6>
                         <p class="text-muted">This role doesn't have any permissions assigned yet.</p>
                         @can('edit roles')
-                        <a href="{{ route('roles.edit', $role) }}" class="btn btn-primary">
+                        <a href="{{ route('roles.edit', \App\Services\EncryptionService::encryptId($role->id)) }}" class="btn btn-primary">
                             <i class="ti ti-plus me-2"></i>Assign Permissions
                         </a>
                         @endcan
@@ -211,7 +211,7 @@
                     {{ strtoupper(substr($role->name, 0, 1)) }}
                 </div>
                 <h5 class="mb-1">{{ $role->name }}</h5>
-                <p class="text-muted mb-3">Role ID: {{ $role->id }}</p>
+                <p class="text-muted mb-3">System Role</p>
                 
                 <div class="row text-center">
                     <div class="col-6">
@@ -255,17 +255,17 @@
             <div class="card-body">
                 <div class="d-grid gap-2">
                     @can('edit roles')
-                    <a href="{{ route('roles.edit', $role) }}" class="btn btn-outline-warning">
+                    <a href="{{ route('roles.edit', \App\Services\EncryptionService::encryptId($role->id)) }}" class="btn btn-outline-warning">
                         <i class="ti ti-edit me-2"></i>Edit Role
                     </a>
                     @endcan
                     
                     @can('delete roles')
                     @if($role->users_count == 0)
-                    <form method="POST" action="{{ route('roles.destroy', $role) }}" onsubmit="return confirm('Are you sure you want to delete this role?')">
+                    <form method="POST" action="{{ route('roles.destroy', \App\Services\EncryptionService::encryptId($role->id)) }}">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger w-100">
+                        <button type="submit" class="btn btn-outline-danger w-100 delete-btn" data-name="{{ $role->name }}">
                             <i class="ti ti-trash me-2"></i>Delete Role
                         </button>
                     </form>

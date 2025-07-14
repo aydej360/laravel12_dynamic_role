@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Log;
+use App\Services\EncryptionService;
 
 class RoleController extends Controller
 {
@@ -55,59 +56,93 @@ class RoleController extends Controller
         Log::info('Role created: ' . $role->name . ' by: ' . auth()->user()->name);
 
         return redirect()->route('roles.index')
-            ->with('success', 'Role created successfully.');
+            ->with('success', 'Role "' . $role->name . '" has been created successfully!');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Role $role)
+    public function show($encryptedId)
     {
-        $role->load('permissions');
-        Log::info('Role details viewed: ' . $role->name . ' by: ' . auth()->user()->name);
-        return view('roles.show', compact('role'));
+        try {
+            $id = EncryptionService::decryptId($encryptedId);
+            $role = Role::findOrFail($id);
+            $role->load('permissions');
+            Log::info('Role details viewed: ' . $role->name . ' by: ' . auth()->user()->name);
+            return view('roles.show', compact('role'));
+        } catch (\Exception $e) {
+            Log::error('Error viewing role: ' . $e->getMessage());
+            return redirect()->route('roles.index')
+                ->with('error', 'Unable to view role. Invalid or expired link.');
+        }
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Role $role)
+    public function edit($encryptedId)
     {
-        $permissions = Permission::all();
-        $role->load('permissions');
-        return view('roles.edit', compact('role', 'permissions'));
+        try {
+            $id = EncryptionService::decryptId($encryptedId);
+            $role = Role::findOrFail($id);
+            $permissions = Permission::all();
+            $role->load('permissions');
+            return view('roles.edit', compact('role', 'permissions'));
+        } catch (\Exception $e) {
+            Log::error('Error editing role: ' . $e->getMessage());
+            return redirect()->route('roles.index')
+                ->with('error', 'Unable to edit role. Invalid or expired link.');
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Role $role)
+    public function update(Request $request, $encryptedId)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
-            'permissions' => 'array'
-        ]);
+        try {
+            $id = EncryptionService::decryptId($encryptedId);
+            $role = Role::findOrFail($id);
+            
+            $request->validate([
+                'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+                'permissions' => 'array'
+            ]);
 
-        $role->update(['name' => $request->name]);
-        $role->syncPermissions($request->permissions ?? []);
+            $role->update(['name' => $request->name]);
+            $role->syncPermissions($request->permissions ?? []);
 
-        Log::info('Role updated: ' . $role->name . ' by: ' . auth()->user()->name);
+            Log::info('Role updated: ' . $role->name . ' by: ' . auth()->user()->name);
 
-        return redirect()->route('roles.index')
-            ->with('success', 'Role updated successfully.');
+            return redirect()->route('roles.index')
+                ->with('success', 'Role "' . $role->name . '" has been updated successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error updating role: ' . $e->getMessage());
+            return redirect()->route('roles.index')
+                ->with('error', 'Unable to update role. Please try again.');
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Role $role)
+    public function destroy($encryptedId)
     {
-        $roleName = $role->name;
-        $role->delete();
+        try {
+            $id = EncryptionService::decryptId($encryptedId);
+            $role = Role::findOrFail($id);
+            
+            $roleName = $role->name;
+            $role->delete();
 
-        Log::info('Role deleted: ' . $roleName . ' by: ' . auth()->user()->name);
+            Log::info('Role deleted: ' . $roleName . ' by: ' . auth()->user()->name);
 
-        return redirect()->route('roles.index')
-            ->with('success', 'Role deleted successfully.');
+            return redirect()->route('roles.index')
+                ->with('success', 'Role "' . $roleName . '" has been deleted successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error deleting role: ' . $e->getMessage());
+            return redirect()->route('roles.index')
+                ->with('error', 'Unable to delete role. Please try again.');
+        }
     }
 }

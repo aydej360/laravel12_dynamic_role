@@ -79,7 +79,7 @@
                                             </div>
                                             <div class="flex-grow-1 ms-3">
                                                 <h6 class="mb-0">{{ $role->name }}</h6>
-                                                <small class="text-muted">ID: {{ $role->id }}</small>
+                                                <small class="text-muted">System Role</small>
                                             </div>
                                         </div>
                                     </td>
@@ -114,23 +114,23 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                             @can('view roles')
-                                            <a href="{{ route('roles.show', $role) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                            <a href="{{ route('roles.show', \App\Services\EncryptionService::encryptId($role->id)) }}" class="btn btn-sm btn-outline-primary" title="View">
                                                 <i class="ti ti-eye"></i>
                                             </a>
                                             @endcan
                                             
                                             @can('edit roles')
-                                            <a href="{{ route('roles.edit', $role) }}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <a href="{{ route('roles.edit', \App\Services\EncryptionService::encryptId($role->id)) }}" class="btn btn-sm btn-outline-warning" title="Edit">
                                                 <i class="ti ti-edit"></i>
                                             </a>
                                             @endcan
                                             
                                             @can('delete roles')
                                             @if($role->users_count == 0)
-                                            <form method="POST" action="{{ route('roles.destroy', $role) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this role?')">
+                                            <form method="POST" action="{{ route('roles.destroy', \App\Services\EncryptionService::encryptId($role->id)) }}" class="d-inline delete-form">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger delete-btn" title="Delete" data-name="{{ $role->name }}">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>

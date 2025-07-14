@@ -14,7 +14,7 @@
                 <ul class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
                     <li class="breadcrumb-item"><a href="{{ route('roles.index') }}">Roles</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('roles.show', $role) }}">{{ $role->name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('roles.show', \App\Services\EncryptionService::encryptId($role->id)) }}">{{ $role->name }}</a></li>
                     <li class="breadcrumb-item" aria-current="page">Edit</li>
                 </ul>
             </div>
@@ -32,7 +32,7 @@
                 <p class="text-muted mb-0">Update the role's information and permissions.</p>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('roles.update', $role) }}">
+                <form method="POST" action="{{ route('roles.update', \App\Services\EncryptionService::encryptId($role->id)) }}">
                     @csrf
                     @method('PUT')
 
@@ -79,7 +79,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('roles.show', $role) }}" class="btn btn-secondary">
+                        <a href="{{ route('roles.show', \App\Services\EncryptionService::encryptId($role->id)) }}" class="btn btn-secondary">
                             <i class="ti ti-x me-1"></i>Cancel
                         </a>
                         <button type="submit" class="btn btn-primary">
@@ -101,7 +101,7 @@
                     {{ strtoupper(substr($role->name, 0, 1)) }}
                 </div>
                 <h5 class="mb-1">{{ $role->name }}</h5>
-                <p class="text-muted mb-3">Role ID: {{ $role->id }}</p>
+                <p class="text-muted mb-3">System Role</p>
                 
                 <div class="row text-center">
                     <div class="col-6">
@@ -179,7 +179,7 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('roles.show', $role) }}" class="btn btn-outline-primary">
+                    <a href="{{ route('roles.show', \App\Services\EncryptionService::encryptId($role->id)) }}" class="btn btn-outline-primary">
                         <i class="ti ti-eye me-2"></i>View Role
                     </a>
                     <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary">
