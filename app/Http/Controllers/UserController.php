@@ -60,7 +60,8 @@ class UserController extends Controller
         ]);
 
         if ($request->has('roles')) {
-            $user->assignRole($request->roles);
+            $roleNames = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
+            $user->assignRole($roleNames);
         }
 
         Log::info('User created: ' . $user->name . ' by: ' . auth()->user()->name);
@@ -114,25 +115,30 @@ class UserController extends Controller
             $id = EncryptionService::decryptId($encryptedId);
             $user = User::findOrFail($id);
         
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'roles' => 'array'
-        ]);
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+                'password' => 'nullable|string|min:8|confirmed',
+                'roles' => 'array'
+            ]);
 
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-        ]);
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
 
-        if ($request->filled('password')) {
-            $user->update(['password' => Hash::make($request->password)]);
-        }
+            if ($request->filled('password')) {
+                $user->update(['password' => Hash::make($request->password)]);
+            }
 
-        $user->syncRoles($request->roles ?? []);
+            if ($request->has('roles')) {
+                $roleNames = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
+                $user->syncRoles($roleNames);
+            } else {
+                $user->syncRoles([]);
+            }
 
-        Log::info('User updated: ' . $user->name . ' by: ' . auth()->user()->name);
+            Log::info('User updated: ' . $user->name . ' by: ' . auth()->user()->name);
 
             return redirect()->route('users.index')
                 ->with('success', 'User "' . $user->name . '" has been updated successfully!');

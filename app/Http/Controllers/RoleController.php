@@ -50,7 +50,8 @@ class RoleController extends Controller
         $role = Role::create(['name' => $request->name]);
 
         if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+            $permissionNames = Permission::whereIn('id', $request->permissions)->pluck('name')->toArray();
+            $role->syncPermissions($permissionNames);
         }
 
         Log::info('Role created: ' . $role->name . ' by: ' . auth()->user()->name);
@@ -110,7 +111,13 @@ class RoleController extends Controller
             ]);
 
             $role->update(['name' => $request->name]);
-            $role->syncPermissions($request->permissions ?? []);
+            
+            if ($request->has('permissions')) {
+                $permissionNames = Permission::whereIn('id', $request->permissions)->pluck('name')->toArray();
+                $role->syncPermissions($permissionNames);
+            } else {
+                $role->syncPermissions([]);
+            }
 
             Log::info('Role updated: ' . $role->name . ' by: ' . auth()->user()->name);
 

@@ -110,7 +110,7 @@
                                     <td>{{ $user->created_at->format('M d, Y') }}</td>
                                     <td>
                                         @can('view users')
-                                        <a href="{{ route('users.show', $user) }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ route('users.show', App\Services\EncryptionService::encryptId($user->id)) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="ti ti-eye"></i>
                                         </a>
                                         @endcan
